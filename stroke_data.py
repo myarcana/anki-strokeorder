@@ -25,14 +25,17 @@ def _convert_graphics(entry: dict) -> StrokeData:
 
 
 def get_stroke_data(characters: list[str]) -> list[StrokeData]:
-    results = [None] * len(characters)
+    stroke_data = {}
     ch_index = len('{"character":"') # the index in each line where the character for that entry is
     data_module = '.'.join(__name__.split('.')[:-1] + ['data'])
     with files(data_module).joinpath('graphics.txt').open(encoding='utf-8') as graphics:
         for line in graphics:
             if line[ch_index] in characters:
                 entry = json.loads(line)
-                stroke_data = _convert_graphics(entry)
-                results[characters.index(line[ch_index])] = stroke_data
+                stroke_datum = _convert_graphics(entry)
+                stroke_data[line[ch_index]] = stroke_datum
+    results = []
+    for character in characters:
+        results.append(stroke_data.get(character))
     return results
 
