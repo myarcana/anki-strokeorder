@@ -34,6 +34,14 @@ def _make_group(col: int, row: int, paths: list[str]) -> str:
 '''.strip()
     return g
 
+def _make_text(col: int, row: int, character: str) -> str:
+    x = col * CELL_WIDTH + UPPER_LEFT[0]
+    y = - row * CELL_HEIGHT - UPPER_LEFT[1]
+    foreign_object = fr'''
+<text x="{x}" y="{y}" style="font-size: {CELL_HEIGHT}px;">{character}</text>
+'''.strip()
+    return foreign_object
+
 
 def _make_path(definition: str, style: dict[str, str]) -> str:
     path = fr'''
@@ -69,12 +77,15 @@ def get_unified(word: str) -> str:
     groups = []
     path_style = _style_stroke_fill('currentColor') | _style_stroke_border('#333', '30px')
     for i, stroke_datum in enumerate(stroke_data):
-        paths = []
-        for definition in stroke_datum.paths:
-            path = _make_path(definition, path_style)
-            paths.append(path)
-        g = _make_group(i, 0, paths)
-        groups.append(g)
+        if stroke_datum is None:
+            groups.append(_make_text(i, 0, characters[i]))
+        else:
+            paths = []
+            for definition in stroke_datum.paths:
+                path = _make_path(definition, path_style)
+                paths.append(path)
+            g = _make_group(i, 0, paths)
+            groups.append(g)
     svg = _make_container(len(stroke_data), 1, groups)
     return svg
 
@@ -87,17 +98,20 @@ def get_steps(word: str) -> str:
     current_stroke_style = current_color | _opacity('0.9')
     previous_stroke_style = current_color | _opacity('0.7')
     for col, stroke_datum in enumerate(stroke_data):
-        for stroke_number, strokes in enumerate(accumulate([d] for d in stroke_datum.paths)):
-            paths = []
-            for definition in strokes:
-                if definition == strokes[-1]:
-                    style = current_stroke_style
-                else:
-                    style = previous_stroke_style
-                path = _make_path(definition, style)
-                paths.append(path)
-            g = _make_group(col, stroke_number, paths)
-            groups.append(g)
-    svg = _make_container(len(stroke_data), max(len(s.paths) for s in stroke_data), groups)
+        if stroke_datum is None:
+            groups.append(_make_text(col, 0, characters[col]))
+        else:
+            for stroke_number, strokes in enumerate(accumulate([d] for d in stroke_datum.paths)):
+                paths = []
+                for definition in strokes:
+                    if definition == strokes[-1]:
+                        style = current_stroke_style
+                    else:
+                        style = previous_stroke_style
+                    path = _make_path(definition, style)
+                    paths.append(path)
+                g = _make_group(col, stroke_number, paths)
+                groups.append(g)
+    svg = _make_container(len(stroke_data), max(len(s.paths) if s is not None else 1 for s in stroke_data), groups)
     return svg
 
