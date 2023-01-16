@@ -32,5 +32,3 @@ def invalid_name(filter_name: str) -> str:
 hooks.field_filter.append(strokeorder_field_filter)
 
 
-debug.log_card_htmls()
-
