@@ -1,0 +1,9 @@
+{% set graphic_width = 1024 %}
+{% set chars = stroke_data|length %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {{ chars * graphic_width }} {{ graphic_width }}" style="max-width: calc(1em * {{ chars }});">
+  {% for i, (_, definitions, medians) in enumerate(stroke_data) %}
+  <g transform="scale(1, -1) translate({{ i * graphic_width }}, -900)">
+  </g>
+  {% endfor %}
+</svg>
+
